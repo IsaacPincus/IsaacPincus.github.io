@@ -1,4 +1,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: https://isaacpincus.github.io/al-folio/sitemap.xml
+Sitemap: https://IsaacPincus.github.io/al-folio/sitemap.xml
