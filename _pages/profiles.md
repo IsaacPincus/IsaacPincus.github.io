@@ -1,6 +1,7 @@
 ---
 layout: profiles
 permalink: /people/
+published: false
 title: people
 description: members of the lab or group
 nav: true
