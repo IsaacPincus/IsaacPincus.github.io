@@ -20,9 +20,30 @@ social: true # includes social icons at the bottom of the page
 
 I am a scientist and engineer by training, with expertise in rheology, soft matter, and computational physics. I'm broadly interested in applying computational and theoretical modelling to better understand and model physical processes in micro- and meso-scale systems. I did my PhD at Monash University, Australia, supervised by [Ravi Jagadeshan](https://research.monash.edu/en/persons/ravi-jagadeeshan) and [Alison Rodger](https://chemistry.anu.edu.au/people/prof-alison-rodger), followed by postdocs at MIT working with [Gareth McKinley](https://nnf.mit.edu/people/alumni) and [Maggie Qi](https://qigroup.mit.edu/team/), and at the University of Lausanne working with [Pietro de Anna](https://pietrodeanna.org/pda/). 
 
-Welcome to my webpage! 
+On this website, you can view information about [projects]({% link _pages/projects.md %}) I've worked on, including simplified overviews of papers I've published. I also have several [teaching]({% link _pages/teaching.md %}) resources available for classes that I've demonstrated and lectured for throughout my PhD and postdoc. 
 
+<div style="max-width: 560px;">
+  <figure>
+    <iframe width="560" height="315" 
+      src="https://www.youtube.com/embed/AVa0PXonQjg?si=q1MrEF5ufQx-9OoX" 
+      frameborder="0" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+      allowfullscreen>
+    </iframe>
+    <figcaption>My winning entry to the <a href="https://www.societyofrheology.org/">Society of Rheology</a> Gallery of Rheology video showcase at the Santa Fe 2025 meeting.</figcaption>
+  </figure>
+</div>
 
+<div style="max-width: 560px;">
+  <figure>
+    <video width="100%" controls>
+      <source src="{{ site.baseurl }}/assets/video/SoR_GoR_2025_Isaac_Pincus.mp4#t=11" type="video/mp4">
+      <source src="{{ site.baseurl }}/assets/video/SoR_GoR_2025_Isaac_Pincus.webm#t=11" type="video/webm">
+      Your browser doesn't support video playback.
+    </video>
+     <figcaption>My winning entry to the <a href="https://www.societyofrheology.org/">Society of Rheology</a> Gallery of Rheology video showcase at the Santa Fe 2025 meeting.</figcaption>
+  </figure>
+</div>
 
 <!-- Here you will find information 
 
