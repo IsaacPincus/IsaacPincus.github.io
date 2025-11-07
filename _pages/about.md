@@ -37,7 +37,6 @@ On this website, you can view information about [projects]({% link _pages/projec
 <div style="max-width: 560px;">
   <figure>
     <video width="100%" controls>
-      <source src="{{ site.baseurl }}/assets/video/SoR_GoR_2025_Isaac_Pincus.mp4#t=11" type="video/mp4">
       <source src="{{ site.baseurl }}/assets/video/SoR_GoR_2025_Isaac_Pincus.webm#t=11" type="video/webm">
       Your browser doesn't support video playback.
     </video>
