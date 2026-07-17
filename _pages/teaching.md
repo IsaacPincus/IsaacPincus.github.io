@@ -5,7 +5,7 @@ permalink: /teaching/
 description: Materials for courses you taught. Replace this text with your description.
 nav: true
 nav_order: 6
-display_categories: [work, fun]
+display_categories: [work]
 horizontal: false
 ---
 
@@ -25,7 +25,7 @@ I have taught the following courses throughout my bachelors, PhD, and postdoc:
 
 [Vector Analysis](https://applicationspub.unil.ch/interpub/noauth/php/Ud/ficheCours.php?v_enstyid=85180&v_ueid=258&v_etapeid1=21798&v_langue=en&v_isinterne=), UNIL, lecturer
 
-I have also taught an informal course on advanced fluid dynamics at UNIL, and assisted with teaching advanced transport phenomena at MIT. 
+I have also taught an informal course on advanced fluid dynamics at UNIL, and assisted with teaching advanced transport phenomena at MIT in an unofficial capacity. 
 
 Below you can find several resources I've developed to use in teaching. These mostly consist of matlab scripts with dynamic figures, so that one can easily visualise vector fields in 3D.
 

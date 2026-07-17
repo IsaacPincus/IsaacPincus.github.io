@@ -2,16 +2,16 @@
 layout: about
 title: about
 permalink: /
-subtitle: <a href='#'>Affiliations</a>. Address. Contacts. Motto. Etc.
+# subtitle: <a href='#'>Affiliations</a>. Address. Contacts. Motto. Etc.
 
 profile:
   align: right
   image: prof_pic.jpg
-  image_circular: false # crops the image to make it circular
-  more_info: >
-    <p>555 your office number</p>
-    <p>123 your address street</p>
-    <p>Your City, State 12345</p>
+  image_circular: true # crops the image to make it circular
+  # more_info: >
+  #   <p>555 your office number</p>
+  #   <p>123 your address street</p>
+  #   <p>Your City, State 12345</p>
 
 news: false # includes a list of news items
 selected_papers: false # includes a list of papers marked as "selected={true}"
@@ -22,7 +22,7 @@ I am a scientist and engineer by training, with expertise in rheology, soft matt
 
 On this website, you can view information about [projects]({% link _pages/projects.md %}) I've worked on, including simplified overviews of papers I've published. I also have several [teaching]({% link _pages/teaching.md %}) resources available for classes that I've demonstrated and lectured for throughout my PhD and postdoc. 
 
-<div style="max-width: 560px;">
+<!-- <div style="max-width: 560px;">
   <figure>
     <iframe width="560" height="315" 
       src="https://www.youtube.com/embed/AVa0PXonQjg?si=q1MrEF5ufQx-9OoX" 
@@ -32,7 +32,7 @@ On this website, you can view information about [projects]({% link _pages/projec
     </iframe>
     <figcaption>My winning entry to the <a href="https://www.societyofrheology.org/">Society of Rheology</a> Gallery of Rheology video showcase at the Santa Fe 2025 meeting.</figcaption>
   </figure>
-</div>
+</div> -->
 
 <!-- <div style="max-width: 560px;">
   <figure>
