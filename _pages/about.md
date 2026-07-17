@@ -34,7 +34,7 @@ On this website, you can view information about [projects]({% link _pages/projec
   </figure>
 </div>
 
-<div style="max-width: 560px;">
+<!-- <div style="max-width: 560px;">
   <figure>
     <video width="100%" controls>
       <source src="{{ site.baseurl }}/assets/video/SoR_GoR_2025_Isaac_Pincus.webm#t=11" type="video/webm">
@@ -42,7 +42,7 @@ On this website, you can view information about [projects]({% link _pages/projec
     </video>
      <figcaption>My winning entry to the <a href="https://www.societyofrheology.org/">Society of Rheology</a> Gallery of Rheology video showcase at the Santa Fe 2025 meeting.</figcaption>
   </figure>
-</div>
+</div> -->
 
 <!-- Here you will find information 
 
