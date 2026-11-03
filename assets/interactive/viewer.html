@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vector calculus viewers</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="viewers.css" />
+    <script>
+      window.MathJax = {
+        tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+        chtml: { scale: 1.05 },
+        options: { enableMenu: false }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.2/math.min.js"></script>
+  </head>
+  <body>
+    <div class="sheet">
+      <div class="switch" id="switch" hidden>
+        <label for="pick">Show</label>
+        <select id="pick"></select>
+      </div>
+      <div id="stage"></div>
+      <noscript><p class="lede">These figures need JavaScript.</p></noscript>
+    </div>
+
+    <script type="module">
+      import registry from "./js/registry.js";
+      import { mount } from "./js/runtime.js";
+
+      const stage = document.getElementById("stage");
+      const pick = document.getElementById("pick");
+
+      // ?v=curve                     one viewer
+      // ?v=curve,double-integral     both, with a menu (the default)
+      const asked = new URLSearchParams(location.search).get("v");
+      const names = (asked ? asked.split(",") : Object.keys(registry))
+        .map((n) => n.trim())
+        .filter((n) => registry[n]);
+      if (!names.length) names.push(Object.keys(registry)[0]);
+
+      const mounted = {};
+      names.forEach((name) => {
+        mounted[name] = mount(stage, registry[name]);
+        mounted[name].element.hidden = true;
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = registry[name].title;
+        pick.appendChild(option);
+      });
+
+      function show(name) {
+        names.forEach((n) => {
+          mounted[n].element.hidden = n !== name;
+        });
+        pick.value = name;
+        mounted[name].show();
+        if (names.length > 1) history.replaceState(null, "", "?v=" + name);
+      }
+
+      if (names.length > 1) {
+        document.getElementById("switch").hidden = false;
+        pick.addEventListener("change", () => show(pick.value));
+      }
+      show(names.includes(asked) ? asked : names[0]);
+    </script>
+
+    <script>
+      // Report our height to the embedding page (see the al-folio include).
+      // Only when it actually changes, and never more than once every 150ms:
+      // a resize message that bounces back as a new height would otherwise
+      // loop, and each loop costs the plot a redraw.
+      (function () {
+        var last = 0;
+        var timer = null;
+        function send() {
+          var height = Math.ceil(document.documentElement.scrollHeight);
+          if (Math.abs(height - last) < 4) return;
+          last = height;
+          parent.postMessage({ viewerHeight: height }, "*");
+        }
+        function schedule() {
+          clearTimeout(timer);
+          timer = setTimeout(send, 150);
+        }
+        if (window.ResizeObserver) new ResizeObserver(schedule).observe(document.body);
+        window.addEventListener("load", schedule);
+        setTimeout(schedule, 400);
+      })();
+    </script>
+  </body>
+</html>
