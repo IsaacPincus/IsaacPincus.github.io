@@ -11,10 +11,11 @@ import doubleIntegral from "./viewers/double-integral.js";
 import scalarField from "./viewers/scalar-field.js";
 import vectorField from "./viewers/vector-field.js";
 import tensorField from "./viewers/tensor-field.js";
-import flowDeformation from "./viewers/flow-deformation.js";
+// Disabled until ready (also uncomment the entries below):
+// import flowDeformation from "./viewers/flow-deformation.js";
 import streamPathStreak from "./viewers/stream-path-streak.js";
 import materialDerivative from "./viewers/material-derivative.js";
-import convectedDerivative from "./viewers/convected-derivative.js";
+// import convectedDerivative from "./viewers/convected-derivative.js";
 
 export default {
   scalar,
@@ -27,8 +28,8 @@ export default {
   "scalar-field": scalarField,
   "vector-field": vectorField,
   "tensor-field": tensorField,
-  "flow-deformation": flowDeformation,
+  // "flow-deformation": flowDeformation,
   "stream-path-streak": streamPathStreak,
-  "material-derivative": materialDerivative,
-  "convected-derivative": convectedDerivative
+  "material-derivative": materialDerivative
+  // "convected-derivative": convectedDerivative
 };
