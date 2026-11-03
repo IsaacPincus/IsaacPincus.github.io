@@ -1,0 +1,16 @@
+<iframe
+  class="embedded-viewer"
+  src="{{ include.src | relative_url }}"
+  title="{{ include.title }}"
+  loading="lazy"
+  style="width: 100%; height: {{ include.height | default: 820 }}px; border: 1px solid #ccd7df; border-radius: 3px;"
+></iframe>
+
+<script>
+  window.addEventListener("message", function (e) {
+    if (!e.data || !e.data.viewerHeight) return;
+    document.querySelectorAll("iframe.embedded-viewer").forEach(function (f) {
+      if (f.contentWindow === e.source) f.style.height = e.data.viewerHeight + 8 + "px";
+    });
+  });
+</script>

@@ -6,8 +6,8 @@ permalink: /
 
 profile:
   align: right
-  image: prof_pic.jpg
-  image_circular: true # crops the image to make it circular
+  image: Isaac_1.jpg
+  image_circular: false # crops the image to make it circular
   # more_info: >
   #   <p>555 your office number</p>
   #   <p>123 your address street</p>
@@ -18,9 +18,112 @@ selected_papers: false # includes a list of papers marked as "selected={true}"
 social: true # includes social icons at the bottom of the page
 ---
 
-I am a scientist and engineer by training, with expertise in rheology, soft matter, and computational physics. I'm broadly interested in applying computational and theoretical modelling to better understand and model physical processes in micro- and meso-scale systems. I did my PhD at Monash University, Australia, supervised by [Ravi Jagadeshan](https://research.monash.edu/en/persons/ravi-jagadeeshan) and [Alison Rodger](https://chemistry.anu.edu.au/people/prof-alison-rodger), followed by postdocs at MIT working with [Gareth McKinley](https://nnf.mit.edu/people/alumni) and [Maggie Qi](https://qigroup.mit.edu/team/), and at the University of Lausanne working with [Pietro de Anna](https://pietrodeanna.org/pda/). 
+I am a scientist and engineer by training, with expertise in rheology, soft matter, computational physics, and experimental microfluidics. I'm broadly interested in applying computational and theoretical modelling to better understand and model physical processes in micro- and meso-scale systems. I did my PhD at Monash University, Australia, supervised by [Ravi Jagadeshan](https://research.monash.edu/en/persons/ravi-jagadeeshan) and [Alison Rodger](https://chemistry.anu.edu.au/people/prof-alison-rodger), followed by postdocs at MIT working with [Gareth McKinley](https://nnf.mit.edu/people/alumni) and [Maggie Qi](https://qigroup.mit.edu/team/), and at the University of Lausanne working with [Pietro de Anna](https://pietrodeanna.org/pda/). 
 
 On this website, you can view information about [projects]({% link _pages/projects.md %}) I've worked on, including simplified overviews of papers I've published. I also have several [teaching]({% link _pages/teaching.md %}) resources available for classes that I've demonstrated and lectured for throughout my PhD and postdoc. 
+
+
+<div class="project-slideshow" id="projShow">
+  <div class="slides">
+    {% assign sorted_projects = site.projects | sort: "importance" %}
+    {% for project in sorted_projects %}
+      {% if project.img %}
+        <div class="slide{% if forloop.first %} active{% endif %}">
+          <a href="{{ project.url | relative_url }}">
+            {% if project.img contains '.webm' or project.img contains '.mp4' %}
+              <video class="img-fluid rounded z-depth-1" width="100%" muted loop playsinline preload="none">
+                <source src="{{ project.img | relative_url }}" type="video/webm">
+              </video>
+            {% else %}
+              {% include figure.liquid loading="eager" path=project.img class="img-fluid rounded z-depth-1" %}
+            {% endif %}
+            <p class="slide-cap">{{ project.title }}</p>
+          </a>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <button class="nav prev" onclick="moveSlide('projShow',-1)">&#10094;</button>
+  <button class="nav next" onclick="moveSlide('projShow',1)">&#10095;</button>
+  <div class="dots"></div>
+</div>
+
+<style>
+.project-slideshow { position: relative; max-width: 640px; margin: 1.5rem auto; }
+.project-slideshow .slide { display: none; }
+.project-slideshow .slide.active { display: block; }
+.project-slideshow .slide a { text-decoration: none; color: inherit; }
+.project-slideshow .slide figure { margin: 0; }
+/* Fixed frame: every slide is the same size; images are letterboxed, not cropped */
+.project-slideshow .slide img,
+.project-slideshow .slide video {
+  width: 100%; aspect-ratio: 16 / 10; object-fit: contain;
+  background: var(--global-bg-color); display: block;
+}
+.project-slideshow .slide-cap {
+  text-align: center; font-size: 0.95rem; margin-top: 0.5rem; opacity: 0.85;
+  min-height: 2.8em; /* room for two lines, so long titles don't shift the dots */
+}
+.project-slideshow .nav {
+  position: absolute; top: 40%; transform: translateY(-50%);
+  background: rgba(0,0,0,0.4); color: #fff; border: none;
+  padding: 0.4rem 0.7rem; cursor: pointer; border-radius: 6px; font-size: 1.1rem;
+}
+.project-slideshow .nav.prev { left: 8px; }
+.project-slideshow .nav.next { right: 8px; }
+.project-slideshow .dots { text-align: center; margin-top: 0.6rem; }
+.project-slideshow .dot {
+  height: 9px; width: 9px; margin: 0 4px; border-radius: 50%;
+  background: #bbb; display: inline-block; cursor: pointer;
+}
+.project-slideshow .dot.active { background: #666; }
+</style>
+
+<script>
+function goToSlide(show, n){
+  const slides = show.querySelectorAll('.slide');
+  const dots = show.querySelectorAll('.dot');
+  slides.forEach((s, i) => {
+    s.classList.toggle('active', i === n);
+    const v = s.querySelector('video');
+    if (v){ if (i === n){ v.play().catch(()=>{}); } else { v.pause(); } }
+    if (dots[i]) dots[i].classList.toggle('active', i === n);
+  });
+  show.dataset.cur = n;
+}
+function moveSlide(id, dir){
+  const show = document.getElementById(id);
+  const total = show.querySelectorAll('.slide').length;
+  const cur = parseInt(show.dataset.cur || '0', 10);
+  goToSlide(show, (cur + dir + total) % total);
+  restartTimer(show);
+}
+function restartTimer(show){
+  if (show._timer) clearInterval(show._timer);
+  show._timer = setInterval(() => moveSlideAuto(show), 4000);
+}
+function moveSlideAuto(show){
+  const total = show.querySelectorAll('.slide').length;
+  const cur = parseInt(show.dataset.cur || '0', 10);
+  goToSlide(show, (cur + 1) % total);
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const show = document.getElementById('projShow');
+  const slides = show.querySelectorAll('.slide');
+  const dots = show.querySelector('.dots');
+  slides.forEach((_, i) => {
+    const d = document.createElement('span');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => { goToSlide(show, i); restartTimer(show); };
+    dots.appendChild(d);
+  });
+  show.dataset.cur = '0';
+  restartTimer(show);
+  show.addEventListener('mouseenter', () => clearInterval(show._timer));
+  show.addEventListener('mouseleave', () => restartTimer(show));
+});
+</script>
 
 <!-- <div style="max-width: 560px;">
   <figure>

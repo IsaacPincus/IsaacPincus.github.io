@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Double integrals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.2/math.min.js"></script>
+<style>
+  :root{
+    --ink:#15233a; --muted:#5b6b7c; --paper:#f2f5f7; --panel:#ffffff;
+    --rule:#ccd7df; --red:#b03a2b; --line:#2b5c8a;
+    --serif:"Source Serif 4",Charter,Georgia,serif;
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--paper);
+    background-image:
+      linear-gradient(rgba(43,92,138,.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(43,92,138,.055) 1px, transparent 1px);
+    background-size:26px 26px;
+    color:var(--ink); font-family:var(--serif); font-size:17px; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .sheet{max-width:1060px; margin:0 auto; padding:28px 20px 40px}
+  h1{font-size:29px; font-weight:600; letter-spacing:-.01em; margin:0 0 6px}
+  .lede{max-width:62ch; margin:0 0 20px; color:var(--muted)}
+  .lede code{font-family:var(--mono); font-size:.86em; color:var(--ink)}
+  .figure{background:var(--panel); border:1px solid var(--rule); border-radius:3px;
+          box-shadow:0 1px 0 rgba(21,35,58,.06)}
+  .figure-body{display:grid; grid-template-columns:1fr 244px}
+  #plot{height:490px; min-width:0}
+  .controls{border-left:1px solid var(--rule); padding:16px 16px 18px; background:#fbfcfd}
+  .field{margin-bottom:11px}
+  .field label{display:block; font-size:13.5px; color:var(--muted); margin-bottom:3px}
+  .field input[type=text], .field input[type=number], select{
+    width:100%; font-family:var(--mono); font-size:14px; color:var(--ink);
+    padding:6px 8px; border:1px solid var(--rule); border-radius:2px; background:#fff;
+  }
+  .pair{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+  input:focus-visible, select:focus-visible, button:focus-visible, [type=range]:focus-visible{
+    outline:2px solid var(--line); outline-offset:1px}
+  button{
+    width:100%; margin-top:4px; font-family:var(--serif); font-size:16px; padding:8px 10px;
+    cursor:pointer; color:#fff; background:var(--ink); border:1px solid var(--ink); border-radius:2px;
+  }
+  button:hover{background:#0e1930}
+  .status{min-height:1.2em; margin-top:9px; font-size:13.5px; color:var(--red); font-family:var(--mono)}
+  .scrub{border-top:1px solid var(--rule); padding:12px 18px 16px}
+  .scrub-row{display:flex; align-items:center; gap:14px}
+  .scrub-row span{font-family:var(--mono); font-size:14px; white-space:nowrap}
+  [type=range]{flex:1; accent-color:var(--line); height:22px}
+  .readout{margin-top:9px; font-family:var(--mono); font-size:14px; color:var(--muted); overflow-wrap:anywhere}
+  .readout b{color:var(--red); font-weight:500}
+  .readout em{font-style:normal; color:var(--ink)}
+  .note{max-width:62ch; margin:18px 0 0; font-size:15px; color:var(--muted)}
+  .note code{font-family:var(--mono); font-size:.86em; color:var(--ink)}
+  @media (max-width:760px){
+    .figure-body{grid-template-columns:1fr}
+    .controls{border-left:none; border-top:1px solid var(--rule)}
+    #plot{height:390px}
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <h1>Double integrals</h1>
+  <p class="lede">The integral <code>∫∫ f(x,y) dx dy</code> is the volume under the surface
+  <code>z = f(x,y)</code>. Doing the x-integral first gives the area A(y) of one slice; integrating
+  those areas over y sweeps out the volume. Drag the slider to move the slice.</p>
+
+  <div class="figure">
+    <div class="figure-body">
+      <div id="plot"></div>
+      <div class="controls">
+        <div class="field">
+          <label for="preset">Example</label>
+          <select id="preset">
+            <option value="xsinx">x sin(x) cos(y)</option>
+            <option value="paraboloid">Paraboloid on a square</option>
+            <option value="triangle">Triangular domain</option>
+            <option value="disc">Half-disc domain</option>
+          </select>
+        </div>
+        <div class="field"><label for="f">f(x, y)</label><input id="f" type="text" spellcheck="false"></div>
+        <div class="field">
+          <label>y from / to</label>
+          <div class="pair"><input id="y0" type="number" step="any"><input id="y1" type="number" step="any"></div>
+        </div>
+        <div class="field"><label for="x0">x₀(y), the left edge</label><input id="x0" type="text" spellcheck="false"></div>
+        <div class="field"><label for="x1">x₁(y), the right edge</label><input id="x1" type="text" spellcheck="false"></div>
+        <button id="draw">Draw surface</button>
+        <div class="status" id="status" role="status"></div>
+      </div>
+    </div>
+    <div class="scrub">
+      <div class="scrub-row">
+        <span>y =</span>
+        <input id="yslider" type="range" aria-label="slice position y">
+        <span id="yval">0.00</span>
+      </div>
+      <div class="readout" id="readout"></div>
+    </div>
+  </div>
+
+  <p class="note">The edges can depend on y: try <code>0</code> and <code>y</code> for a triangle, or
+  <code>-sqrt(1-y^2)</code> and <code>sqrt(1-y^2)</code> for a disc. Areas and volumes here are
+  computed numerically (Simpson's rule in x, trapezoid in y), so you can check your hand-worked
+  answers against them.</p>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var PRESETS = {
+    xsinx:      {f:"x sin(x) cos(y)", y0:0, y1:3, x0:"0", x1:"3"},
+    paraboloid: {f:"x^2 + y^2",       y0:-1, y1:1, x0:"-1", x1:"1"},
+    triangle:   {f:"x y",             y0:0, y1:2, x0:"0", x1:"y"},
+    disc:       {f:"exp(-(x^2+y^2))", y0:0, y1:1, x0:"-sqrt(1-y^2)", x1:"sqrt(1-y^2)"}
+  };
+
+  var NX = 91, NY = 91, NSLICE = 121;   // odd, for Simpson
+  var gd = document.getElementById("plot");
+  var el = {
+    f:document.getElementById("f"), y0:document.getElementById("y0"), y1:document.getElementById("y1"),
+    x0:document.getElementById("x0"), x1:document.getElementById("x1"),
+    draw:document.getElementById("draw"), preset:document.getElementById("preset"),
+    slider:document.getElementById("yslider"), yval:document.getElementById("yval"),
+    readout:document.getElementById("readout"), status:document.getElementById("status")
+  };
+
+  var S = {};
+
+  function compile2(expr, label){
+    var c;
+    try { c = math.compile(expr); }
+    catch(e){ throw new Error("Can't read " + label + ": " + e.message); }
+    return function(x, y){
+      var v = c.evaluate({x:x, y:y});
+      return (typeof v === "number" && isFinite(v)) ? v : NaN;
+    };
+  }
+
+  function linspace(a, b, n){
+    var out = new Array(n);
+    for (var i=0; i<n; i++) out[i] = a + (b-a)*i/(n-1);
+    return out;
+  }
+
+  // Simpson's rule on evenly spaced samples (odd count)
+  function simpson(vals, h){
+    var n = vals.length, s = vals[0] + vals[n-1];
+    for (var i=1; i<n-1; i++) s += (i % 2 ? 4 : 2) * vals[i];
+    return s * h / 3;
+  }
+
+  function sliceAt(y){
+    var a = S.x0(0, y), b = S.x1(0, y);
+    var xs = linspace(a, b, NSLICE), zs = new Array(NSLICE);
+    for (var i=0; i<NSLICE; i++){
+      var v = S.f(xs[i], y);
+      zs[i] = isFinite(v) ? v : 0;
+    }
+    var area = (b === a) ? 0 : simpson(zs, (b-a)/(NSLICE-1));
+    return {xs:xs, zs:zs, area:area, a:a, b:b};
+  }
+
+  function build(){
+    el.status.textContent = "";
+    try {
+      var y0 = Number(el.y0.value), y1 = Number(el.y1.value);
+      if (!isFinite(y0) || !isFinite(y1) || y1 <= y0) throw new Error("Need y-range with start < end");
+
+      S = {
+        f:  compile2(el.f.value,  "f(x,y)"),
+        x0: compile2(el.x0.value, "x₀(y)"),
+        x1: compile2(el.x1.value, "x₁(y)"),
+        y0: y0, y1: y1
+      };
+
+      var ys = linspace(y0, y1, NY);
+      var X = [], Y = [], Z = [], Z0 = [];
+      var zmin = Infinity, zmax = -Infinity, xmin = Infinity, xmax = -Infinity;
+      var areas = new Array(NY);
+
+      for (var j=0; j<NY; j++){
+        var a = S.x0(0, ys[j]), b = S.x1(0, ys[j]);
+        if (!isFinite(a) || !isFinite(b)) throw new Error("Edges are undefined at y = " + ys[j].toFixed(2));
+        var xr = linspace(a, b, NX), zr = new Array(NX), yr = new Array(NX);
+        for (var i=0; i<NX; i++){
+          var v = S.f(xr[i], ys[j]);
+          zr[i] = isFinite(v) ? v : null;
+          yr[i] = ys[j];
+          if (zr[i] !== null){ if (zr[i]<zmin) zmin=zr[i]; if (zr[i]>zmax) zmax=zr[i]; }
+        }
+        if (a<xmin) xmin=a; if (b<xmin) xmin=b;
+        if (a>xmax) xmax=a; if (b>xmax) xmax=b;
+        X.push(xr); Y.push(yr); Z.push(zr); Z0.push(new Array(NX).fill(0));
+        areas[j] = sliceAt(ys[j]).area;
+      }
+      if (!isFinite(zmin)) throw new Error("f(x,y) is undefined over this region");
+
+      // cumulative volume by trapezoid in y
+      var cum = new Array(NY), dy = (y1-y0)/(NY-1);
+      cum[0] = 0;
+      for (var k=1; k<NY; k++) cum[k] = cum[k-1] + 0.5*(areas[k]+areas[k-1])*dy;
+      S.ys = ys; S.areas = areas; S.cum = cum;
+      S.total = simpson(areas, dy);   // NY is odd, so Simpson applies in y as well
+
+      var zlo = Math.min(0, zmin), zhi = Math.max(0, zmax);
+      var zpad = 0.08*(zhi-zlo) + 1e-6;
+
+      var sl = sliceAt((y0+y1)/2);
+      var mesh = sliceMesh(sl, (y0+y1)/2);
+
+      var traces = [
+        { type:"surface", x:X, y:Y, z:Z, opacity:0.88, showscale:false,
+          colorscale:"Viridis", hoverinfo:"skip",
+          contours:{x:{highlight:false}, y:{highlight:false}, z:{highlight:false}},
+          lighting:{ambient:.75, diffuse:.55, specular:.12} },
+        { type:"surface", x:X, y:Y, z:Z0, opacity:0.22, showscale:false, hoverinfo:"skip",
+          surfacecolor:Z0, colorscale:[[0,"#5b6b7c"],[1,"#5b6b7c"]],
+          lighting:{ambient:1, diffuse:0, specular:0} },
+        { type:"mesh3d", x:mesh.x, y:mesh.y, z:mesh.z, i:mesh.i, j:mesh.j, k:mesh.k,
+          color:"#b03a2b", opacity:0.72, flatshading:true, hoverinfo:"skip",
+          lighting:{ambient:.9, diffuse:.3, specular:0} },
+        { type:"scatter3d", mode:"lines", hoverinfo:"skip", showlegend:false,
+          x:mesh.ox, y:mesh.oy, z:mesh.oz, line:{color:"#7d2418", width:4} }
+      ];
+
+      var axis = function(title, r){ return {
+        title:{text:title, font:{size:15}}, range:r,
+        gridcolor:"#dbe3ea", zerolinecolor:"#9fb2c1", backgroundcolor:"#fbfcfd",
+        showbackground:true, tickfont:{size:11}
+      };};
+
+      Plotly.react(gd, traces, {
+        margin:{l:0,r:0,t:6,b:0},
+        paper_bgcolor:"#ffffff",
+        scene:{
+          xaxis:axis("x", [xmin, xmax]),
+          yaxis:axis("y", [y0, y1]),
+          zaxis:axis("z", [zlo-zpad, zhi+zpad]),
+          aspectmode:"cube",
+          camera:{eye:{x:1.75, y:-1.75, z:0.95}},
+          annotations:[]
+        }
+      }, {responsive:true, displaylogo:false,
+          modeBarButtonsToRemove:["resetCameraLastSave3d"]});
+
+      el.slider.min = y0; el.slider.max = y1; el.slider.step = (y1-y0)/600;
+      el.slider.value = (y0+y1)/2;
+      update();
+    } catch(err){
+      el.status.textContent = err.message;
+    }
+  }
+
+  // vertices: bottom 0..n-1 at z = 0, top n..2n-1 at z = f
+  function sliceMesh(sl, y){
+    var n = sl.xs.length, x=[], yy=[], z=[], i=[], j=[], k=[];
+    for (var p=0; p<n; p++){ x.push(sl.xs[p]); yy.push(y); z.push(0); }
+    for (p=0; p<n; p++){ x.push(sl.xs[p]); yy.push(y); z.push(sl.zs[p]); }
+    for (p=0; p<n-1; p++){
+      i.push(p);   j.push(p+1);   k.push(n+p);
+      i.push(p+1); j.push(n+p+1); k.push(n+p);
+    }
+    var ox=[sl.xs[0]], oy=[y], oz=[0];
+    for (p=0; p<n; p++){ ox.push(sl.xs[p]); oy.push(y); oz.push(sl.zs[p]); }
+    ox.push(sl.xs[n-1], sl.xs[0]); oy.push(y, y); oz.push(0, 0);
+    return {x:x, y:yy, z:z, i:i, j:j, k:k, ox:ox, oy:oy, oz:oz};
+  }
+
+  function interp(xs, vs, x){
+    if (x <= xs[0]) return vs[0];
+    var n = xs.length;
+    if (x >= xs[n-1]) return vs[n-1];
+    var t = (x - xs[0]) / (xs[n-1] - xs[0]) * (n-1);
+    var lo = Math.floor(t), w = t - lo;
+    return vs[lo]*(1-w) + vs[lo+1]*w;
+  }
+
+  function update(){
+    if (!S.f) return;
+    var y = Number(el.slider.value);
+    el.yval.textContent = y.toFixed(2);
+
+    var sl = sliceAt(y), m = sliceMesh(sl, y);
+    Plotly.restyle(gd, {x:[m.x], y:[m.y], z:[m.z], i:[m.i], j:[m.j], k:[m.k]}, [2]);
+    Plotly.restyle(gd, {x:[m.ox], y:[m.oy], z:[m.oz]}, [3]);
+
+    var swept = interp(S.ys, S.cum, y);
+    el.readout.innerHTML =
+      "A(" + y.toFixed(2) + ") = <b>" + sl.area.toFixed(3) + "</b>" +
+      "   volume swept so far = <em>" + swept.toFixed(3) + "</em>" +
+      "   full integral = <em>" + S.total.toFixed(3) + "</em>";
+
+    var zt = Math.max.apply(null, sl.zs.concat([0]));
+    Plotly.relayout(gd, {"scene.annotations":[{
+      x:(sl.a+sl.b)/2, y:y, z:zt, text:"A(y) = " + sl.area.toFixed(3),
+      showarrow:false, yshift:16,
+      font:{color:"#7d2418", size:13, family:"IBM Plex Mono, monospace"},
+      bgcolor:"rgba(255,255,255,.85)", bordercolor:"#b03a2b", borderwidth:1, borderpad:3
+    }]});
+  }
+
+  function loadPreset(){
+    var p = PRESETS[el.preset.value];
+    el.f.value = p.f; el.y0.value = p.y0; el.y1.value = p.y1;
+    el.x0.value = p.x0; el.x1.value = p.x1;
+    build();
+  }
+
+  el.slider.addEventListener("input", update);
+  el.draw.addEventListener("click", build);
+  el.preset.addEventListener("change", loadPreset);
+  [el.f, el.y0, el.y1, el.x0, el.x1].forEach(function(fld){
+    fld.addEventListener("keydown", function(e){ if (e.key === "Enter") build(); });
+  });
+
+  loadPreset();
+})();
+</script>
+<script>
+  // Report our height to the embedding page (see the al-folio include).
+  (function(){
+    function send(){
+      parent.postMessage({viewerHeight: document.documentElement.scrollHeight}, "*");
+    }
+    if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+    window.addEventListener("load", send);
+    setTimeout(send, 400);
+  })();
+</script>
+</body>
+</html>

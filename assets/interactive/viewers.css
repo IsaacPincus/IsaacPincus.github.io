@@ -1,0 +1,331 @@
+:root {
+  --ink: #15233a;
+  --muted: #5b6b7c;
+  --paper: #f2f5f7;
+  --panel: #ffffff;
+  --rule: #ccd7df;
+  --green: #12795a;
+  --red: #b03a2b;
+  --violet: #6a3d9a;
+  --line: #2b5c8a;
+  --serif: "Source Serif 4", Charter, Georgia, serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+}
+body {
+  background: var(--paper);
+  background-image:
+    linear-gradient(rgba(43, 92, 138, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(43, 92, 138, 0.055) 1px, transparent 1px);
+  background-size: 26px 26px;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+[hidden] {
+  display: none;
+}
+
+.sheet {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 28px 20px 40px;
+}
+
+.switch {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 22px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--rule);
+}
+.switch label {
+  font-size: 14px;
+  color: var(--muted);
+}
+.switch select {
+  font-family: var(--mono);
+  font-size: 15px;
+  color: var(--ink);
+  padding: 6px 8px;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: #fff;
+}
+
+h1 {
+  font-size: 29px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 6px;
+}
+.lede,
+.note {
+  max-width: 62ch;
+  color: var(--muted);
+}
+.lede {
+  margin: 0 0 20px;
+}
+.note {
+  margin: 18px 0 0;
+  font-size: 15px;
+}
+.lede code,
+.note code {
+  font-family: var(--mono);
+  font-size: 0.86em;
+  color: var(--ink);
+}
+
+.figure {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  box-shadow: 0 1px 0 rgba(21, 35, 58, 0.06);
+}
+.plot {
+  height: 480px;
+  min-width: 0;
+}
+
+/* Controls sit in a strip under the plot and wrap into as many columns as
+   fit, so a viewer with a dozen inputs stays short instead of stretching the
+   page to the height of its control column. */
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  gap: 12px 16px;
+  align-items: end;
+  border-top: 1px solid var(--rule);
+  padding: 16px 18px;
+  background: #fbfcfd;
+}
+.field {
+  margin: 0;
+  min-width: 0;
+}
+.checks {
+  grid-column: span 2;
+}
+.actions {
+  display: flex;
+  align-items: flex-end;
+}
+.field label {
+  display: block;
+  font-size: 13.5px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+.field input,
+.controls select {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--ink);
+  padding: 6px 8px;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: #fff;
+}
+.pair, .row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.checks {
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 4px 10px 8px;
+  margin: 14px 0 12px;
+}
+.checks legend {
+  font-size: 13.5px;
+  color: var(--muted);
+  padding: 0 5px;
+}
+.check {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14.5px;
+  margin: 6px 0;
+}
+.check input {
+  width: auto;
+}
+input:focus-visible,
+select:focus-visible,
+button:focus-visible,
+[type="range"]:focus-visible {
+  outline: 2px solid var(--line);
+  outline-offset: 1px;
+}
+
+.controls button {
+  width: 100%;
+  font-family: var(--serif);
+  font-size: 16px;
+  padding: 8px 10px;
+  cursor: pointer;
+  color: #fff;
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+}
+.controls button:hover {
+  background: #0e1930;
+}
+.status:not(:empty) {
+  padding: 10px 18px;
+  border-top: 1px solid var(--rule);
+  font-size: 13.5px;
+  color: var(--red);
+  font-family: var(--mono);
+}
+
+.scrub {
+  border-top: 1px solid var(--rule);
+  padding: 12px 18px 16px;
+}
+.scrub-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.scrub-row span {
+  font-family: var(--mono);
+  font-size: 14px;
+  white-space: nowrap;
+}
+[type="range"] {
+  flex: 1;
+  accent-color: var(--line);
+  height: 22px;
+}
+
+.readout {
+  margin-top: 9px;
+  min-height: 2.9em;
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.readout .pos {
+  color: var(--green);
+}
+.readout .vel,
+.readout .area {
+  color: var(--red);
+}
+.readout .tan {
+  color: var(--violet);
+}
+.readout .vol {
+  color: var(--ink);
+}
+
+/* --- written material --------------------------------------------------- */
+.prose {
+  max-width: 66ch;
+  margin: 26px 0 0;
+}
+.prose h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+.prose p {
+  margin: 0 0 12px;
+}
+.prose ul {
+  margin: 0 0 12px;
+  padding-left: 20px;
+}
+.prose li {
+  margin-bottom: 5px;
+}
+.prose code,
+.readout code {
+  font-family: var(--mono);
+  font-size: 0.86em;
+}
+.prose mjx-container[display="true"] {
+  margin: 14px 0 !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+@media (max-width: 760px) {
+  .plot {
+    height: 380px;
+  }
+  .checks {
+    grid-column: span 1;
+  }
+}
+
+/* --- formula block ------------------------------------------------------ */
+.formula {
+  margin: 0 0 20px;
+  padding: 14px 18px;
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--line);
+  border-radius: 2px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  font-size: 15px;
+}
+.formula mjx-container {
+  margin: 0 !important;
+}
+
+/* --- several sliders ---------------------------------------------------- */
+.scrub-row + .scrub-row {
+  margin-top: 6px;
+}
+.scrub-name {
+  min-width: 2.6em;
+  text-align: right;
+}
+.scrub-value {
+  min-width: 4em;
+}
+.figure-body.no-controls {
+  grid-template-columns: 1fr;
+}
+.row {
+  display: grid;
+  gap: 8px;
+}
+.readout .k-green {
+  color: var(--green);
+}
+.readout .k-red {
+  color: var(--red);
+}
+.readout .k-violet {
+  color: var(--violet);
+}
+.readout .k-blue {
+  color: var(--line);
+}
+.readout .k-magenta {
+  color: #a4308f;
+}
+.readout .k-ink {
+  color: var(--ink);
+}

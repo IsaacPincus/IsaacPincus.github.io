@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Vector analysis with Matlab
-description: A collection of Matlab scripts developed to aid in teaching vector analysis
+description: Interactive Matlab scripts for teaching vector analysis, with worked examples such as Stokes' theorem that students can modify and explore in 3D.
 img: assets/img/12.jpg
 importance: 1
 category: work

@@ -12,7 +12,7 @@ description:
 ---
 
 
-<iframe src="{{ site.baseurl }}/assets/pdf/example_pdf.pdf" 
+<iframe src="{{ site.baseurl }}/assets/pdf/CV.pdf" 
   width="100%" 
   height="600px">
 </iframe>

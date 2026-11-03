@@ -1,0 +1,18 @@
+<div class="project-row card hoverable mb-4">
+  <a href="{% if project.redirect %}{{ project.redirect }}{% else %}{{ project.url | relative_url }}{% endif %}">
+    <div class="row no-gutters align-items-center">
+      {% if project.img %}
+        <div class="col-md-4 project-row-img">
+          {% include figure.liquid loading="lazy" path=project.img sizes="(min-width: 768px) 300px, 100vw" alt=project.title %}
+        </div>
+      {% endif %}
+      <div class="{% if project.img %}col-md-8{% else %}col-md-12{% endif %}">
+        <div class="card-body">
+          <h3 class="card-title">{{ project.title }}</h3>
+          <p class="card-text">{{ project.description }}</p>
+          <span class="project-row-more">Read more &rarr;</span>
+        </div>
+      </div>
+    </div>
+  </a>
+</div>

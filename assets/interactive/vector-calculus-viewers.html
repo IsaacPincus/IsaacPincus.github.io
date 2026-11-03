@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vector calculus viewers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.2/math.min.js"></script>
+<style>
+  :root{
+    --ink:#15233a; --muted:#5b6b7c; --paper:#f2f5f7; --panel:#ffffff;
+    --rule:#ccd7df; --green:#12795a; --red:#b03a2b; --violet:#6a3d9a; --line:#2b5c8a;
+    --serif:"Source Serif 4",Charter,Georgia,serif;
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--paper);
+    background-image:
+      linear-gradient(rgba(43,92,138,.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(43,92,138,.055) 1px, transparent 1px);
+    background-size:26px 26px;
+    color:var(--ink); font-family:var(--serif); font-size:17px; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .sheet{max-width:1060px; margin:0 auto; padding:28px 20px 40px}
+  h1{font-size:29px; font-weight:600; letter-spacing:-.01em; margin:0 0 6px}
+  .lede{max-width:62ch; margin:0 0 20px; color:var(--muted)}
+  .lede code{font-family:var(--mono); font-size:.86em; color:var(--ink)}
+  .figure{background:var(--panel); border:1px solid var(--rule); border-radius:3px;
+          box-shadow:0 1px 0 rgba(21,35,58,.06)}
+  .figure-body{display:grid; grid-template-columns:1fr 244px}
+  #c-plot,#d-plot{height:470px; min-width:0}
+  .controls{border-left:1px solid var(--rule); padding:16px 16px 18px; background:#fbfcfd}
+  .field{margin-bottom:11px}
+  .field label{display:block; font-size:13.5px; color:var(--muted); margin-bottom:3px}
+  .field input[type=text], .field input[type=number], select{
+    width:100%; font-family:var(--mono); font-size:14px; color:var(--ink);
+    padding:6px 8px; border:1px solid var(--rule); border-radius:2px; background:#fff;
+  }
+  .pair{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+  input:focus-visible, select:focus-visible, button:focus-visible, [type=range]:focus-visible{
+    outline:2px solid var(--line); outline-offset:1px}
+  .check{display:flex; align-items:center; gap:7px; font-size:14.5px; margin:6px 0}
+  .checks{border:1px solid var(--rule); border-radius:2px; padding:4px 10px 8px; margin:14px 0 12px}
+  .checks legend{font-size:13.5px; color:var(--muted); padding:0 5px}
+  button{
+    width:100%; font-family:var(--serif); font-size:16px; padding:8px 10px; cursor:pointer;
+    color:#fff; background:var(--ink); border:1px solid var(--ink); border-radius:2px;
+  }
+  button:hover{background:#0e1930}
+  .status{min-height:1.2em; margin-top:9px; font-size:13.5px; color:var(--red); font-family:var(--mono)}
+  .scrub{border-top:1px solid var(--rule); padding:12px 18px 16px}
+  .scrub-row{display:flex; align-items:center; gap:14px}
+  .scrub-row span{font-family:var(--mono); font-size:14px; white-space:nowrap}
+  [type=range]{flex:1; accent-color:var(--line); height:22px}
+  .readout{margin-top:9px; font-family:var(--mono); font-size:14px; color:var(--muted); overflow-wrap:anywhere}
+  .readout b{color:var(--green); font-weight:500}
+  .readout i{color:var(--red); font-style:normal}
+  .readout u{color:var(--violet); text-decoration:none}
+  .note{max-width:62ch; margin:18px 0 0; font-size:15px; color:var(--muted)}
+  @media (max-width:760px){
+    .figure-body{grid-template-columns:1fr}
+    .controls{border-left:none; border-top:1px solid var(--rule)}
+    #c-plot,#d-plot{height:380px}
+  }
+  .readout em{font-style:normal; color:var(--ink)}
+  .readout strong{color:var(--red); font-weight:500}
+  .note code{font-family:var(--mono); font-size:.86em; color:var(--ink)}
+  [hidden]{display:none}
+  .switch{display:flex; align-items:baseline; gap:10px; margin:0 0 22px;
+          padding-bottom:14px; border-bottom:1px solid var(--rule)}
+  .switch label{font-size:14px; color:var(--muted)}
+  .switch select{font-family:var(--mono); font-size:15px; color:var(--ink);
+                 padding:6px 8px; border:1px solid var(--rule); border-radius:2px; background:#fff}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="switch">
+    <label for="demo">Show</label>
+    <select id="demo">
+      <option value="curve">Parametrised curves</option>
+      <option value="integral">Double integrals</option>
+    </select>
+  </div>
+
+  <section id="demo-curve">
+
+  <h1>Parametrised curves</h1>
+  <p class="lede">A curve in space is a map <code>t ↦ φ(t) = (x(t), y(t), z(t))</code> from an interval
+  onto ℝ³. Drag the slider to move along the curve. The green arrow is the position vector φ(t);
+  the red arrow is the velocity φ′(t), and the purple arrow is the unit tangent T(t) = φ′/|φ′|.</p>
+
+  <div class="figure">
+    <div class="figure-body">
+      <div id="c-plot"></div>
+      <div class="controls">
+        <div class="field">
+          <label for="c-preset">Example</label>
+          <select id="c-preset">
+            <option value="helix">Helix</option>
+            <option value="circle">Circle in the plane</option>
+            <option value="lissajous">Lissajous knot</option>
+            <option value="spiral">Conical spiral</option>
+          </select>
+        </div>
+        <div class="field"><label for="c-fx">x(t)</label><input id="c-fx" type="text" spellcheck="false"></div>
+        <div class="field"><label for="c-fy">y(t)</label><input id="c-fy" type="text" spellcheck="false"></div>
+        <div class="field"><label for="c-fz">z(t)</label><input id="c-fz" type="text" spellcheck="false"></div>
+        <div class="field">
+          <label>t from / to</label>
+          <div class="pair">
+            <input id="c-t0" type="number" step="any"><input id="c-t1" type="number" step="any">
+          </div>
+        </div>
+        <fieldset class="checks">
+          <legend>Arrows at the point</legend>
+          <label class="check"><input id="c-vel" type="checkbox" checked> Velocity &phi;&prime;(t)</label>
+          <label class="check"><input id="c-tan" type="checkbox"> Unit tangent T(t)</label>
+        </fieldset>
+        <div class="field">
+          <label for="c-scale">Velocity arrow length</label>
+          <select id="c-scale">
+            <option value="fit">Scaled to fit the view</option>
+            <option value="true">True scale</option>
+          </select>
+        </div>
+        <button id="c-draw">Draw curve</button>
+        <div class="status" id="c-status" role="status"></div>
+      </div>
+    </div>
+    <div class="scrub">
+      <div class="scrub-row">
+        <span>t =</span>
+        <input id="c-tslider" type="range" aria-label="parameter t">
+        <span id="c-tval">0.00</span>
+      </div>
+      <div class="readout" id="c-readout"></div>
+    </div>
+  </div>
+
+  <p class="note">Type any expression MATLAB would accept: <code>sin</code>, <code>cos</code>,
+  <code>exp</code>, <code>sqrt</code>, <code>abs</code>, <code>pi</code>, and <code>^</code> for powers.
+  The velocity is found numerically, so you don't need to supply derivatives.</p>
+
+  </section>
+
+  <section id="demo-integral" hidden>
+
+  <h1>Double integrals</h1>
+  <p class="lede">The integral <code>∫∫ f(x,y) dx dy</code> is the volume under the surface
+  <code>z = f(x,y)</code>. Doing the x-integral first gives the area A(y) of one slice; integrating
+  those areas over y sweeps out the volume. Drag the slider to move the slice.</p>
+
+  <div class="figure">
+    <div class="figure-body">
+      <div id="d-plot"></div>
+      <div class="controls">
+        <div class="field">
+          <label for="d-preset">Example</label>
+          <select id="d-preset">
+            <option value="xsinx">x sin(x) cos(y)</option>
+            <option value="paraboloid">Paraboloid on a square</option>
+            <option value="triangle">Triangular domain</option>
+            <option value="disc">Half-disc domain</option>
+          </select>
+        </div>
+        <div class="field"><label for="d-f">f(x, y)</label><input id="d-f" type="text" spellcheck="false"></div>
+        <div class="field">
+          <label>y from / to</label>
+          <div class="pair"><input id="d-y0" type="number" step="any"><input id="d-y1" type="number" step="any"></div>
+        </div>
+        <div class="field"><label for="d-x0">x₀(y), the left edge</label><input id="d-x0" type="text" spellcheck="false"></div>
+        <div class="field"><label for="d-x1">x₁(y), the right edge</label><input id="d-x1" type="text" spellcheck="false"></div>
+        <button id="d-draw">Draw surface</button>
+        <div class="status" id="d-status" role="status"></div>
+      </div>
+    </div>
+    <div class="scrub">
+      <div class="scrub-row">
+        <span>y =</span>
+        <input id="d-yslider" type="range" aria-label="slice position y">
+        <span id="d-yval">0.00</span>
+      </div>
+      <div class="readout" id="d-readout"></div>
+    </div>
+  </div>
+
+  <p class="note">The edges can depend on y: try <code>0</code> and <code>y</code> for a triangle, or
+  <code>-sqrt(1-y^2)</code> and <code>sqrt(1-y^2)</code> for a disc. Areas and volumes here are
+  computed numerically (Simpson's rule in x, trapezoid in y), so you can check your hand-worked
+  answers against them.</p>
+
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var PRESETS = {
+    helix:     {x:"sin(2 pi t)", y:"cos(2 pi t)", z:"t/3", t0:0, t1:3},
+    circle:    {x:"cos(t)", y:"sin(t)", z:"0", t0:0, t1:2*Math.PI},
+    lissajous: {x:"cos(3 t)", y:"sin(2 t)", z:"sin(3 t)/2", t0:0, t1:2*Math.PI},
+    spiral:    {x:"t cos(4 t)/6", y:"t sin(4 t)/6", z:"t/6", t0:0, t1:6}
+  };
+
+  var gd = document.getElementById("c-plot");
+  var el = {
+    fx:  document.getElementById("c-fx"),   fy: document.getElementById("c-fy"),
+    fz:  document.getElementById("c-fz"),   t0: document.getElementById("c-t0"),
+    t1:  document.getElementById("c-t1"),   vel: document.getElementById("c-vel"), tan: document.getElementById("c-tan"),
+    scale:document.getElementById("c-scale"),
+    draw:document.getElementById("c-draw"), preset: document.getElementById("c-preset"),
+    slider:document.getElementById("c-tslider"), tval: document.getElementById("c-tval"),
+    readout:document.getElementById("c-readout"), status: document.getElementById("c-status")
+  };
+
+  var S = {};   // current curve state
+
+  function compile(expr, label){
+    var c;
+    try { c = math.compile(expr); }
+    catch(e){ throw new Error("Can't read " + label + ": " + e.message); }
+    var f = function(t){
+      var v = c.evaluate({t:t});
+      return (typeof v === "number" && isFinite(v)) ? v : NaN;
+    };
+    if (!isFinite(f(Number(el.t0.value)))) throw new Error(label + " is undefined at t = " + el.t0.value);
+    return f;
+  }
+
+  function deriv(f, t, h){
+    return (f(t+h) - f(t-h)) / (2*h);
+  }
+
+  function arrow(px, py, pz, ux, uy, uz, colour, sizeref){
+    return [
+      { type:"scatter3d", mode:"lines", hoverinfo:"skip", showlegend:false,
+        x:[px, px+ux], y:[py, py+uy], z:[pz, pz+uz],
+        line:{color:colour, width:6} },
+      { type:"cone", anchor:"tip", sizemode:"absolute", sizeref:sizeref,
+        showscale:false, hoverinfo:"skip", lighting:{ambient:.85},
+        colorscale:[[0,colour],[1,colour]],
+        x:[px+ux], y:[py+uy], z:[pz+uz], u:[ux], v:[uy], w:[uz] }
+    ];
+  }
+
+  function build(){
+    el.status.textContent = "";
+    try {
+      var t0 = Number(el.t0.value), t1 = Number(el.t1.value);
+      if (!isFinite(t0) || !isFinite(t1) || t1 <= t0) throw new Error("Need t-range with start < end");
+
+      var x = compile(el.fx.value, "x(t)"),
+          y = compile(el.fy.value, "y(t)"),
+          z = compile(el.fz.value, "z(t)");
+
+      var N = 900, h = (t1-t0)*1e-5;
+      var tt=[], cx=[], cy=[], cz=[];
+      for (var i=0; i<N; i++){
+        var t = t0 + (t1-t0)*i/(N-1);
+        tt.push(t); cx.push(x(t)); cy.push(y(t)); cz.push(z(t));
+      }
+      if (!cx.some(isFinite)) throw new Error("Curve is undefined over this range");
+
+      var showVel = el.vel.checked, showTan = el.tan.checked;
+      var trueScale = (el.scale.value === "true");
+
+      // sample the velocity along the whole curve: needed for the arrow scale
+      var vel = new Array(N), speedMax = 0, k;
+      for (k=0; k<N; k++){
+        var d = [deriv(x,tt[k],h), deriv(y,tt[k],h), deriv(z,tt[k],h)];
+        vel[k] = d;
+        var sp = Math.sqrt(d[0]*d[0] + d[1]*d[1] + d[2]*d[2]);
+        if (isFinite(sp) && sp > speedMax) speedMax = sp;
+      }
+
+      // frame the view on the curve and the origin, not on the arrows: a fast
+      // curve would otherwise shrink to nothing inside its own velocity vectors
+      function span(arr){
+        var v = arr.filter(isFinite);
+        return [Math.min.apply(null, v), Math.max.apply(null, v)];
+      }
+      var base = {x:cx.concat([0]), y:cy.concat([0]), z:cz.concat([0])};
+      var ext = Math.max.apply(null, ["x","y","z"].map(function(a){
+        var e = span(base[a]); return e[1] - e[0];
+      }));
+      if (!(ext > 0)) ext = 1;
+
+      var vScale = 1;
+      if (showVel && !trueScale && speedMax > 0) vScale = 0.32*ext/speedMax;
+
+      var pts = {x:base.x.slice(), y:base.y.slice(), z:base.z.slice()};
+      function addTips(factor){
+        for (var m=0; m<N; m+=6){
+          var f = factor(m);
+          if (!f) continue;
+          pts.x.push(cx[m] + vel[m][0]*f);
+          pts.y.push(cy[m] + vel[m][1]*f);
+          pts.z.push(cz[m] + vel[m][2]*f);
+        }
+      }
+      if (showVel) addTips(function(){ return vScale; });
+      if (showTan) addTips(function(m){
+        var d = vel[m], q = Math.sqrt(d[0]*d[0] + d[1]*d[1] + d[2]*d[2]);
+        return q > 0 ? 1/q : 0;
+      });
+
+      var rng = {};
+      ["x","y","z"].forEach(function(a){
+        var lohi = span(pts[a]);
+        var pad = 0.08*(lohi[1]-lohi[0]) + 0.1;
+        rng[a] = [lohi[0]-pad, lohi[1]+pad];
+      });
+      var scale = Math.max(rng.x[1]-rng.x[0], rng.y[1]-rng.y[0], rng.z[1]-rng.z[0]);
+
+      S = {x:x, y:y, z:z, t0:t0, t1:t1, h:h, showVel:showVel, showTan:showTan,
+           vScale:vScale, sizeref:0.09*scale};
+
+      var t = Number(el.slider.value);
+      if (!isFinite(t) || t < t0 || t > t1) t = t0;
+      var px = x(t), py = y(t), pz = z(t);
+
+      var traces = [
+        { type:"scatter3d", mode:"lines", name:"curve", hoverinfo:"skip", showlegend:false,
+          x:cx, y:cy, z:cz, line:{color:"#2b5c8a", width:4} }
+      ];
+      traces = traces.concat(arrow(0,0,0, px,py,pz, "#12795a", S.sizeref));
+      traces = traces.concat(arrow(px,py,pz, 0,0,0, "#b03a2b", S.sizeref));
+      traces = traces.concat(arrow(px,py,pz, 0,0,0, "#6a3d9a", S.sizeref));
+      traces[3].visible = showVel; traces[4].visible = showVel;
+      traces[5].visible = showTan; traces[6].visible = showTan;
+
+      var axis = function(title, r){ return {
+        title:{text:title, font:{size:15}}, range:r,
+        gridcolor:"#dbe3ea", zerolinecolor:"#9fb2c1", backgroundcolor:"#fbfcfd",
+        showbackground:true, tickfont:{size:11}
+      };};
+
+      Plotly.react(gd, traces, {
+        margin:{l:0,r:0,t:6,b:0},
+        paper_bgcolor:"#ffffff",
+        scene:{
+          xaxis:axis("x", rng.x), yaxis:axis("y", rng.y), zaxis:axis("z", rng.z),
+          aspectmode:"data",
+          camera:{eye:{x:1.5, y:-1.7, z:1.0}},
+          annotations:[]
+        }
+      }, {responsive:true, displaylogo:false,
+          modeBarButtonsToRemove:["resetCameraLastSave3d"]});
+
+      el.slider.min = t0; el.slider.max = t1; el.slider.step = (t1-t0)/600; el.slider.value = t;
+      update();
+    } catch(err){
+      el.status.textContent = err.message;
+    }
+  }
+
+  function fmt(v){ return (Math.abs(v) < 5e-3 ? 0 : v).toFixed(2); }
+
+  function update(){
+    if (!S.x) return;
+    var t = Number(el.slider.value);
+    var px = S.x(t), py = S.y(t), pz = S.z(t);
+    el.tval.textContent = t.toFixed(2);
+
+    Plotly.restyle(gd, {x:[[0,px]], y:[[0,py]], z:[[0,pz]]}, [1]);
+    Plotly.restyle(gd, {x:[[px]], y:[[py]], z:[[pz]], u:[[px]], v:[[py]], w:[[pz]]}, [2]);
+
+    var out = "φ(" + t.toFixed(2) + ") = <b>(" + fmt(px) + ", " + fmt(py) + ", " + fmt(pz) + ")</b>";
+    var ann = [{
+      x:px, y:py, z:pz, text:"φ(t)", showarrow:false, yshift:14,
+      font:{color:"#12795a", size:13, family:"IBM Plex Mono, monospace"},
+      bgcolor:"rgba(255,255,255,.85)"
+    }];
+
+    if (S.showVel || S.showTan){
+      var vx = (S.x(t+S.h)-S.x(t-S.h))/(2*S.h),
+          vy = (S.y(t+S.h)-S.y(t-S.h))/(2*S.h),
+          vz = (S.z(t+S.h)-S.z(t-S.h))/(2*S.h);
+      var speed = Math.sqrt(vx*vx + vy*vy + vz*vz);
+
+      if (S.showVel){
+        var ax = vx*S.vScale, ay = vy*S.vScale, az = vz*S.vScale;
+        Plotly.restyle(gd, {x:[[px,px+ax]], y:[[py,py+ay]], z:[[pz,pz+az]]}, [3]);
+        Plotly.restyle(gd, {x:[[px+ax]], y:[[py+ay]], z:[[pz+az]],
+                            u:[[ax]], v:[[ay]], w:[[az]]}, [4]);
+        out += "   φ′(" + t.toFixed(2) + ") = <i>(" + fmt(vx) + ", " + fmt(vy) + ", " + fmt(vz) + ")</i>"
+             + "   |φ′| = " + speed.toFixed(2);
+        if (Math.abs(S.vScale - 1) > 1e-9) out += " (arrow at " + S.vScale.toFixed(2) + "×)";
+        ann.push({
+          x:px+ax, y:py+ay, z:pz+az, text:"φ′(t)", showarrow:false, yshift:14,
+          font:{color:"#b03a2b", size:13, family:"IBM Plex Mono, monospace"},
+          bgcolor:"rgba(255,255,255,.85)"
+        });
+      }
+
+      if (S.showTan){
+        var q = speed > 0 ? 1/speed : 0;
+        var tx = vx*q, ty = vy*q, tz = vz*q;
+        Plotly.restyle(gd, {x:[[px,px+tx]], y:[[py,py+ty]], z:[[pz,pz+tz]]}, [5]);
+        Plotly.restyle(gd, {x:[[px+tx]], y:[[py+ty]], z:[[pz+tz]],
+                            u:[[tx]], v:[[ty]], w:[[tz]]}, [6]);
+        out += "   T(" + t.toFixed(2) + ") = <u>(" + fmt(tx) + ", " + fmt(ty) + ", " + fmt(tz) + ")</u>";
+        ann.push({
+          x:px+tx, y:py+ty, z:pz+tz, text:"T(t)", showarrow:false, yshift:14,
+          font:{color:"#6a3d9a", size:13, family:"IBM Plex Mono, monospace"},
+          bgcolor:"rgba(255,255,255,.85)"
+        });
+      }
+    }
+    el.readout.innerHTML = out;
+    Plotly.relayout(gd, {"scene.annotations":ann});
+  }
+
+  function loadPreset(){
+    var p = PRESETS[el.preset.value];
+    el.fx.value = p.x; el.fy.value = p.y; el.fz.value = p.z;
+    el.t0.value = +p.t0.toFixed(4); el.t1.value = +p.t1.toFixed(4);
+    build();
+  }
+
+  el.slider.addEventListener("input", update);
+  el.draw.addEventListener("click", build);
+  el.preset.addEventListener("change", loadPreset);
+  [el.fx, el.fy, el.fz, el.t0, el.t1].forEach(function(f){
+    f.addEventListener("keydown", function(e){ if (e.key === "Enter") build(); });
+  });
+  [el.vel, el.tan, el.scale].forEach(function(c){ c.addEventListener("change", build); });
+
+  var started = false;
+  window.vcShow = window.vcShow || {};
+  window.vcShow["curve"] = function(){
+    if (!started){ started = true; loadPreset(); }
+    else Plotly.Plots.resize(gd);
+  };
+})();
+</script>
+
+<script>
+(function(){
+  "use strict";
+
+  var PRESETS = {
+    xsinx:      {f:"x sin(x) cos(y)", y0:0, y1:3, x0:"0", x1:"3"},
+    paraboloid: {f:"x^2 + y^2",       y0:-1, y1:1, x0:"-1", x1:"1"},
+    triangle:   {f:"x y",             y0:0, y1:2, x0:"0", x1:"y"},
+    disc:       {f:"exp(-(x^2+y^2))", y0:0, y1:1, x0:"-sqrt(1-y^2)", x1:"sqrt(1-y^2)"}
+  };
+
+  var NX = 91, NY = 91, NSLICE = 121;   // odd, for Simpson
+  var gd = document.getElementById("d-plot");
+  var el = {
+    f:document.getElementById("d-f"), y0:document.getElementById("d-y0"), y1:document.getElementById("d-y1"),
+    x0:document.getElementById("d-x0"), x1:document.getElementById("d-x1"),
+    draw:document.getElementById("d-draw"), preset:document.getElementById("d-preset"),
+    slider:document.getElementById("d-yslider"), yval:document.getElementById("d-yval"),
+    readout:document.getElementById("d-readout"), status:document.getElementById("d-status")
+  };
+
+  var S = {};
+
+  function compile2(expr, label){
+    var c;
+    try { c = math.compile(expr); }
+    catch(e){ throw new Error("Can't read " + label + ": " + e.message); }
+    return function(x, y){
+      var v = c.evaluate({x:x, y:y});
+      return (typeof v === "number" && isFinite(v)) ? v : NaN;
+    };
+  }
+
+  function linspace(a, b, n){
+    var out = new Array(n);
+    for (var i=0; i<n; i++) out[i] = a + (b-a)*i/(n-1);
+    return out;
+  }
+
+  // Simpson's rule on evenly spaced samples (odd count)
+  function simpson(vals, h){
+    var n = vals.length, s = vals[0] + vals[n-1];
+    for (var i=1; i<n-1; i++) s += (i % 2 ? 4 : 2) * vals[i];
+    return s * h / 3;
+  }
+
+  function sliceAt(y){
+    var a = S.x0(0, y), b = S.x1(0, y);
+    var xs = linspace(a, b, NSLICE), zs = new Array(NSLICE);
+    for (var i=0; i<NSLICE; i++){
+      var v = S.f(xs[i], y);
+      zs[i] = isFinite(v) ? v : 0;
+    }
+    var area = (b === a) ? 0 : simpson(zs, (b-a)/(NSLICE-1));
+    return {xs:xs, zs:zs, area:area, a:a, b:b};
+  }
+
+  function build(){
+    el.status.textContent = "";
+    try {
+      var y0 = Number(el.y0.value), y1 = Number(el.y1.value);
+      if (!isFinite(y0) || !isFinite(y1) || y1 <= y0) throw new Error("Need y-range with start < end");
+
+      S = {
+        f:  compile2(el.f.value,  "f(x,y)"),
+        x0: compile2(el.x0.value, "x₀(y)"),
+        x1: compile2(el.x1.value, "x₁(y)"),
+        y0: y0, y1: y1
+      };
+
+      var ys = linspace(y0, y1, NY);
+      var X = [], Y = [], Z = [], Z0 = [];
+      var zmin = Infinity, zmax = -Infinity, xmin = Infinity, xmax = -Infinity;
+      var areas = new Array(NY);
+
+      for (var j=0; j<NY; j++){
+        var a = S.x0(0, ys[j]), b = S.x1(0, ys[j]);
+        if (!isFinite(a) || !isFinite(b)) throw new Error("Edges are undefined at y = " + ys[j].toFixed(2));
+        var xr = linspace(a, b, NX), zr = new Array(NX), yr = new Array(NX);
+        for (var i=0; i<NX; i++){
+          var v = S.f(xr[i], ys[j]);
+          zr[i] = isFinite(v) ? v : null;
+          yr[i] = ys[j];
+          if (zr[i] !== null){ if (zr[i]<zmin) zmin=zr[i]; if (zr[i]>zmax) zmax=zr[i]; }
+        }
+        if (a<xmin) xmin=a; if (b<xmin) xmin=b;
+        if (a>xmax) xmax=a; if (b>xmax) xmax=b;
+        X.push(xr); Y.push(yr); Z.push(zr); Z0.push(new Array(NX).fill(0));
+        areas[j] = sliceAt(ys[j]).area;
+      }
+      if (!isFinite(zmin)) throw new Error("f(x,y) is undefined over this region");
+
+      // cumulative volume by trapezoid in y
+      var cum = new Array(NY), dy = (y1-y0)/(NY-1);
+      cum[0] = 0;
+      for (var k=1; k<NY; k++) cum[k] = cum[k-1] + 0.5*(areas[k]+areas[k-1])*dy;
+      S.ys = ys; S.areas = areas; S.cum = cum;
+      S.total = simpson(areas, dy);   // NY is odd, so Simpson applies in y as well
+
+      var zlo = Math.min(0, zmin), zhi = Math.max(0, zmax);
+      var zpad = 0.08*(zhi-zlo) + 1e-6;
+
+      var sl = sliceAt((y0+y1)/2);
+      var mesh = sliceMesh(sl, (y0+y1)/2);
+
+      var traces = [
+        { type:"surface", x:X, y:Y, z:Z, opacity:0.88, showscale:false,
+          colorscale:"Viridis", hoverinfo:"skip",
+          contours:{x:{highlight:false}, y:{highlight:false}, z:{highlight:false}},
+          lighting:{ambient:.75, diffuse:.55, specular:.12} },
+        { type:"surface", x:X, y:Y, z:Z0, opacity:0.22, showscale:false, hoverinfo:"skip",
+          surfacecolor:Z0, colorscale:[[0,"#5b6b7c"],[1,"#5b6b7c"]],
+          lighting:{ambient:1, diffuse:0, specular:0} },
+        { type:"mesh3d", x:mesh.x, y:mesh.y, z:mesh.z, i:mesh.i, j:mesh.j, k:mesh.k,
+          color:"#b03a2b", opacity:0.72, flatshading:true, hoverinfo:"skip",
+          lighting:{ambient:.9, diffuse:.3, specular:0} },
+        { type:"scatter3d", mode:"lines", hoverinfo:"skip", showlegend:false,
+          x:mesh.ox, y:mesh.oy, z:mesh.oz, line:{color:"#7d2418", width:4} }
+      ];
+
+      var axis = function(title, r){ return {
+        title:{text:title, font:{size:15}}, range:r,
+        gridcolor:"#dbe3ea", zerolinecolor:"#9fb2c1", backgroundcolor:"#fbfcfd",
+        showbackground:true, tickfont:{size:11}
+      };};
+
+      Plotly.react(gd, traces, {
+        margin:{l:0,r:0,t:6,b:0},
+        paper_bgcolor:"#ffffff",
+        scene:{
+          xaxis:axis("x", [xmin, xmax]),
+          yaxis:axis("y", [y0, y1]),
+          zaxis:axis("z", [zlo-zpad, zhi+zpad]),
+          aspectmode:"cube",
+          camera:{eye:{x:1.75, y:-1.75, z:0.95}},
+          annotations:[]
+        }
+      }, {responsive:true, displaylogo:false,
+          modeBarButtonsToRemove:["resetCameraLastSave3d"]});
+
+      el.slider.min = y0; el.slider.max = y1; el.slider.step = (y1-y0)/600;
+      el.slider.value = (y0+y1)/2;
+      update();
+    } catch(err){
+      el.status.textContent = err.message;
+    }
+  }
+
+  // vertices: bottom 0..n-1 at z = 0, top n..2n-1 at z = f
+  function sliceMesh(sl, y){
+    var n = sl.xs.length, x=[], yy=[], z=[], i=[], j=[], k=[];
+    for (var p=0; p<n; p++){ x.push(sl.xs[p]); yy.push(y); z.push(0); }
+    for (p=0; p<n; p++){ x.push(sl.xs[p]); yy.push(y); z.push(sl.zs[p]); }
+    for (p=0; p<n-1; p++){
+      i.push(p);   j.push(p+1);   k.push(n+p);
+      i.push(p+1); j.push(n+p+1); k.push(n+p);
+    }
+    var ox=[sl.xs[0]], oy=[y], oz=[0];
+    for (p=0; p<n; p++){ ox.push(sl.xs[p]); oy.push(y); oz.push(sl.zs[p]); }
+    ox.push(sl.xs[n-1], sl.xs[0]); oy.push(y, y); oz.push(0, 0);
+    return {x:x, y:yy, z:z, i:i, j:j, k:k, ox:ox, oy:oy, oz:oz};
+  }
+
+  function interp(xs, vs, x){
+    if (x <= xs[0]) return vs[0];
+    var n = xs.length;
+    if (x >= xs[n-1]) return vs[n-1];
+    var t = (x - xs[0]) / (xs[n-1] - xs[0]) * (n-1);
+    var lo = Math.floor(t), w = t - lo;
+    return vs[lo]*(1-w) + vs[lo+1]*w;
+  }
+
+  function update(){
+    if (!S.f) return;
+    var y = Number(el.slider.value);
+    el.yval.textContent = y.toFixed(2);
+
+    var sl = sliceAt(y), m = sliceMesh(sl, y);
+    Plotly.restyle(gd, {x:[m.x], y:[m.y], z:[m.z], i:[m.i], j:[m.j], k:[m.k]}, [2]);
+    Plotly.restyle(gd, {x:[m.ox], y:[m.oy], z:[m.oz]}, [3]);
+
+    var swept = interp(S.ys, S.cum, y);
+    el.readout.innerHTML =
+      "A(" + y.toFixed(2) + ") = <strong>" + sl.area.toFixed(3) + "</strong>" +
+      "   volume swept so far = <em>" + swept.toFixed(3) + "</em>" +
+      "   full integral = <em>" + S.total.toFixed(3) + "</em>";
+
+    var zt = Math.max.apply(null, sl.zs.concat([0]));
+    Plotly.relayout(gd, {"scene.annotations":[{
+      x:(sl.a+sl.b)/2, y:y, z:zt, text:"A(y) = " + sl.area.toFixed(3),
+      showarrow:false, yshift:16,
+      font:{color:"#7d2418", size:13, family:"IBM Plex Mono, monospace"},
+      bgcolor:"rgba(255,255,255,.85)", bordercolor:"#b03a2b", borderwidth:1, borderpad:3
+    }]});
+  }
+
+  function loadPreset(){
+    var p = PRESETS[el.preset.value];
+    el.f.value = p.f; el.y0.value = p.y0; el.y1.value = p.y1;
+    el.x0.value = p.x0; el.x1.value = p.x1;
+    build();
+  }
+
+  el.slider.addEventListener("input", update);
+  el.draw.addEventListener("click", build);
+  el.preset.addEventListener("change", loadPreset);
+  [el.f, el.y0, el.y1, el.x0, el.x1].forEach(function(fld){
+    fld.addEventListener("keydown", function(e){ if (e.key === "Enter") build(); });
+  });
+
+  var started = false;
+  window.vcShow = window.vcShow || {};
+  window.vcShow["integral"] = function(){
+    if (!started){ started = true; loadPreset(); }
+    else Plotly.Plots.resize(gd);
+  };
+})();
+</script>
+
+<script>
+(function(){
+  "use strict";
+  var sel = document.getElementById("demo");
+  var panes = {curve: document.getElementById("demo-curve"),
+               integral: document.getElementById("demo-integral")};
+
+  function show(which){
+    if (!panes[which]) which = "curve";
+    Object.keys(panes).forEach(function(k){ panes[k].hidden = (k !== which); });
+    sel.value = which;
+    window.vcShow[which]();
+    history.replaceState(null, "", "?demo=" + which);
+  }
+
+  sel.addEventListener("change", function(){ show(sel.value); });
+
+  var want = new URLSearchParams(location.search).get("demo");
+  show(want === "integral" ? "integral" : "curve");
+})();
+</script>
+
+<script>
+  // Report our height to the embedding page (see the al-folio include).
+  (function(){
+    function send(){
+      parent.postMessage({viewerHeight: document.documentElement.scrollHeight}, "*");
+    }
+    if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+    window.addEventListener("load", send);
+    setTimeout(send, 400);
+  })();
+</script>
+</body>
+</html>

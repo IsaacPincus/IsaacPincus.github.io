@@ -2,11 +2,9 @@
 layout: page
 title: teaching
 permalink: /teaching/
-description: Materials for courses you taught. Replace this text with your description.
+description: Courses I've taught and teaching resources I've developed.
 nav: true
 nav_order: 6
-display_categories: [work]
-horizontal: false
 ---
 
 I have taught the following courses throughout my bachelors, PhD, and postdoc:
@@ -31,55 +29,8 @@ Below you can find several resources I've developed to use in teaching. These mo
 
 <!-- pages/teaching.md -->
 <div class="projects">
-{% if site.enable_project_categories and page.display_categories %}
-  <!-- Display categorized teaching -->
-  {% for category in page.display_categories %}
-  <a id="{{ category }}" href=".#{{ category }}">
-    <h2 class="category">{{ category }}</h2>
-  </a>
-  {% assign categorized_teaching = site.teaching | where: "category", category %}
-  {% assign sorted_teaching = categorized_teaching | sort: "importance" %}
-  <!-- Generate cards for each teaching item -->
-  {% if page.horizontal %}
-  <div class="container">
-    <div class="row row-cols-1 row-cols-md-2">
-    {% for project in sorted_teaching %}
-      {% include projects_horizontal.liquid %}
-    {% endfor %}
-    </div>
-  </div>
-  {% else %}
-  <div class="row row-cols-1 row-cols-md-3">
-    {% for project in sorted_teaching %}
-      {% include projects.liquid %}
-    {% endfor %}
-  </div>
-  {% endif %}
+  {% assign sorted_items = site.teaching | sort: "importance" %}
+  {% for project in sorted_items %}
+    {% include project_row.liquid %}
   {% endfor %}
-
-{% else %}
-
-<!-- Display teaching without categories -->
-
-{% assign sorted_teaching = site.teaching | sort: "importance" %}
-
-  <!-- Generate cards for each teaching item -->
-
-{% if page.horizontal %}
-
-  <div class="container">
-    <div class="row row-cols-1 row-cols-md-2">
-    {% for project in sorted_teaching %}
-      {% include projects_horizontal.liquid %}
-    {% endfor %}
-    </div>
-  </div>
-  {% else %}
-  <div class="row row-cols-1 row-cols-md-3">
-    {% for project in sorted_teaching %}
-      {% include projects.liquid %}
-    {% endfor %}
-  </div>
-  {% endif %}
-{% endif %}
 </div>
